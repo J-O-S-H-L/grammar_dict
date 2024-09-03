@@ -127,15 +127,18 @@ def save_source_code(soup, site):
     # Check if 'grammar_pages' directory exists, if not, create it
     if not os.path.exists(grammar_pages_dir):
         logging.warning("Directory 'grammar_pages' does not exist. Creating it.")
-        os.makedirs(os.path.join(dir, "grammar_pages"))
-    filename = os.path.join(dir, "grammar_pages", filename)
+        os.makedirs(grammar_pages_dir)
+
+    # Construct the full path for the file
+    filename = os.path.join(grammar_pages_dir, filename)
+    
     try:
         with open(filename, "w", encoding="utf-8") as file:
             file.write(soup.prettify())
     except IOError as e:
         logging.error(f"Error saving source code for {site}: {e}")
 
-    logging.info(f"Saved source code for {site} to {filename}")
+
 
 
 
@@ -147,7 +150,6 @@ def process_response(response, site, sleep_time):
             return ResponseResult("break", site, sleep_time, False)
         soup = BeautifulSoup(response.text, "html.parser")
         save_source_code(soup, site)
-        logging.info(f"Scraped {site}")
         return ResponseResult("scrape", site, sleep_time, True)
 
     except requests.exceptions.HTTPError as http_err:
@@ -163,41 +165,40 @@ def scrape_sites(sites, times, min_session_interval):
     sites_times = zip(sites, times)
     session = None
     for site, sleep_time in tqdm.tqdm(sites_times, total=len(sites), leave=True):
-        time.sleep(sleep_time)
         dice_roll = random.randint(0,19)
         if connect_to_nord == dice_roll:
             nord_connect()
-    #     try:
-    #         if sleep_time < min_session_interval:
-    #             # Use a session for requests with short sleep times
-    #             if session is None:
-    #                 session = requests.Session()
-    #             response = session.get(site, timeout=10)
-    #         else:
-    #             # Use a direct request for longer sleep times
-    #             if session is not None:
-    #                 session.close()
-    #                 session = None
-    #             response = requests.get(site, timeout=10)
+        try:
+            if sleep_time < min_session_interval:
+                # Use a session for requests with short sleep times
+                if session is None:
+                    session = requests.Session()
+                response = session.get(site, timeout=10)
+            else:
+                # Use a direct request for longer sleep times
+                if session is not None:
+                    session.close()
+                    session = None
+                response = requests.get(site, timeout=10)
 
-    #         result = process_response(response, site, sleep_time)
-    #         if result.action == "break":
-    #             break
-    #         yield result
+            result = process_response(response, site, sleep_time)
+            if result.action == "break":
+                break
+            yield result
 
-    #     except requests.exceptions.Timeout:
-    #         logging.error(f"Timeout occurred while trying to access {site}")
-    #         yield ResponseResult("error", site, sleep_time, False)
-    #     except requests.exceptions.RequestException as e:
-    #         logging.error(f"Error scraping {site}: {e}")
-    #         yield ResponseResult("error", site, sleep_time, False)
-    #     finally:
-    #         if session is not None and sleep_time >= min_session_interval:
-    #             session.close()
-    #             session = None
+        except requests.exceptions.Timeout:
+            logging.error(f"Timeout occurred while trying to access {site}")
+            yield ResponseResult("error", site, sleep_time, False)
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error scraping {site}: {e}")
+            yield ResponseResult("error", site, sleep_time, False)
+        finally:
+            if session is not None and sleep_time >= min_session_interval:
+                session.close()
+                session = None
 
-    #     # Sleep for the designated time
-    #     time.sleep(sleep_time)
+        # Sleep for the designated time
+        time.sleep(sleep_time)
 
     # Ensure the session is closed if it was opened
     if session is not None:
@@ -205,14 +206,20 @@ def scrape_sites(sites, times, min_session_interval):
         session.close()
 
 if __name__ == '__main__':
-
     json_path = "grammar_points.json"
     n_level = "N5"
     sites_to_scrape_list = get_scrape_urls(json_path, n_level)
-    min_sleep = 2 # seconds
-    duration =  calc_duration()
+    min_sleep = 2  # seconds
+    duration = calc_duration()
     n_requests = len(sites_to_scrape_list)
     sleep_times = gen_random_sleeps(min_sleep, duration, n_requests)
-    minimum_session_interval = 5*60
+    minimum_session_interval = 5 * 60
 
-    scrape_sites(sites_to_scrape_list, sleep_times, minimum_session_interval)
+    # Collect results from the generator
+    results = list(scrape_sites(sites_to_scrape_list, sleep_times, minimum_session_interval))
+
+    # Save the results list to a file
+    with open('scrape_results.json', 'w', encoding='utf-8') as f:
+        json.dump([result._asdict() for result in results], f, ensure_ascii=False, indent=4)
+
+
