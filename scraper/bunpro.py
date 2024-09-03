@@ -186,7 +186,10 @@ def scrape_sites(sites, times, min_session_interval):
 
     try:
         for site, sleep_time in tqdm.tqdm(sites_times, total=len(sites), desc="Scraping sites", bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt} sites', leave=True):
-            logging.debug(f"Scraping {site} with sleep time {sleep_time} seconds")
+
+            if site.split('/')[-1] in skip_sites:
+                logging.info(f"Skipping {site} as it has already been scraped.")
+                continue
 
             # Encode the URL properly
             encoded_site = quote(site, safe=':/?=&')
