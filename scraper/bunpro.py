@@ -181,6 +181,8 @@ def process_response(response, site, sleep_time):
 def scrape_sites(sites, times, min_session_interval):
     sites_times = zip(sites, times)
     session = None
+    skip_sites = os.listdir("../grammar_pages")
+    skip_sites = [site.split(".")[0] for site in skip_sites]
 
     try:
         for site, sleep_time in tqdm.tqdm(sites_times, total=len(sites), desc="Scraping sites", bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt} sites', leave=True):
