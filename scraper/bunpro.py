@@ -5,6 +5,7 @@ import datetime as dt
 import time
 import random
 import logging
+import os
 from collections import namedtuple
 
 
@@ -168,3 +169,5 @@ def scrape_sites(sites_times, min_session_interval):
     # Ensure the session is closed if it was opened
     if session is not None:
         session.close()
+
+if 
