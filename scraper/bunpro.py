@@ -5,22 +5,27 @@ import datetime as dt
 import time
 import random
 import logging
+import os
 from collections import namedtuple
+import tqdm
+import subprocess
+from urllib.parse import quote
 
 
-random.seed(42)
 ResponseResult = namedtuple(
     "ResponseResult", ["action", "site", "sleep_time", "scraped"]
 )
+
 
 # Create a logger
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-# Create a file handler for errors and warnings
-file_handler = logging.FileHandler("scraping_errors.log")
+# Create a file handler for errors and warnings with UTF-8 encoding
+file_handler = logging.FileHandler("scraping_errors.log", encoding="utf-8")
 file_handler.setLevel(logging.WARNING)
 
+# Create a console handler to output to the console
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)  # Log info and above to console
 
@@ -32,6 +37,23 @@ console_handler.setFormatter(formatter)
 # Add the handlers to the logger
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
+
+
+# NordVPN connection
+def nord_connect():
+    nordvpn_path = r"C:\Program Files\NordVPN\NordVPN.exe"
+    command = f'& "{nordvpn_path}" -c'
+
+    try:
+        result = subprocess.run(
+            ["powershell", "-Command", command],
+            capture_output=True,
+            text=True,
+            check=True  # Raises CalledProcessError if command fails
+        )
+        print(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred: {e.stderr}")
 
 
 def get_scrape_urls(json_path: str, n_level: str) -> list:
@@ -46,9 +68,14 @@ def get_scrape_urls(json_path: str, n_level: str) -> list:
         logging.error(f"Error decoding JSON from {json_path}.")
         return []
 
-    base_url = "https://bunpro.jp/grammar_points/"
+    base_url = "https://bunpro.jp"
     grammar_points = data.get(n_level, [])
-    scrape_sites = [base_url + gp for gp in grammar_points]
+    
+    scrape_sites = []
+    for grammar_point in grammar_points:
+        for url in grammar_point.values():
+            scrape_sites.append(base_url + url)
+    
     return scrape_sites
 
 
@@ -101,13 +128,32 @@ def calc_duration(start=None, end=None):
 def save_source_code(soup, site):
     """Save the source code of a webpage to a file."""
     filename = site.split("/")[-1] + ".html"
+    dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current file
+    parent_dir = os.path.join(dir, os.pardir)  # Navigate to the parent directory
+    grammar_pages_dir = os.path.join(parent_dir, "grammar_pages")
+
+    # Check if 'grammar_pages' directory exists, if not, create it
+    if not os.path.exists(grammar_pages_dir):
+        logging.warning("Directory 'grammar_pages' does not exist. Creating it.")
+        os.makedirs(grammar_pages_dir)
+
+    # Construct the full path for the file
+    filename = os.path.join(grammar_pages_dir, filename)
+
+    # check if the file already exists
+    if os.path.exists(filename):
+        # if it does, add a timestamp to the filename
+        timestamp = dt.datetime.now().strftime("%Y%m%d%H%M%S")
+        filename = f"{filename}_{timestamp}.html"
+        
     try:
         with open(filename, "w", encoding="utf-8") as file:
             file.write(soup.prettify())
     except IOError as e:
         logging.error(f"Error saving source code for {site}: {e}")
 
-    logging.info(f"Saved source code for {site} to {filename}")
+
+
 
 
 def process_response(response, site, sleep_time):
@@ -116,9 +162,11 @@ def process_response(response, site, sleep_time):
         if response.status_code == 429:
             logging.error(f"Rate limit exceeded for {site}. Exiting.")
             return ResponseResult("break", site, sleep_time, False)
+        
+        time.sleep(sleep_time)
         soup = BeautifulSoup(response.text, "html.parser")
         save_source_code(soup, site)
-        logging.info(f"Scraped {site}")
+
         return ResponseResult("scrape", site, sleep_time, True)
 
     except requests.exceptions.HTTPError as http_err:
@@ -129,42 +177,86 @@ def process_response(response, site, sleep_time):
         return ResponseResult("error", site, sleep_time, False)
 
 
-def scrape_sites(sites_times, min_session_interval):
-    session = None  # Initialize session variable
+def scrape_sites(sites, times, min_session_interval):
+    connect_to_nord = random.randint(0, 19)
+    sites_times = zip(sites, times)
+    session = None
 
-    for site, sleep_time in sites_times:
-        try:
-            if sleep_time < min_session_interval:
-                # Use a session for requests with short sleep times
-                if session is None:
-                    session = requests.Session()
-                response = session.get(site, timeout=10)
-            else:
-                # Use a direct request for longer sleep times
-                if session is not None:
+    try:
+        for site, sleep_time in tqdm.tqdm(sites_times, total=len(sites), desc="Scraping sites", bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt} sites', leave=True):
+            logging.debug(f"Scraping {site} with sleep time {sleep_time} seconds")
+
+            # Encode the URL properly
+            encoded_site = quote(site, safe=':/?=&')
+
+            # Randomly connect to NordVPN
+            dice_roll = random.randint(0, 19)
+            if connect_to_nord == dice_roll:
+                try:
+                    nord_connect()  # Ensure this function is defined and works
+                    logging.debug("Connected to NordVPN")
+                except Exception as e:
+                    logging.error(f"Error connecting to NordVPN: {e}")
+                    continue  # Skip to the next site if NordVPN connection fails
+
+            try:
+                if sleep_time < min_session_interval:
+                    # Use a session for requests with short sleep times
+                    if session is None:
+                        session = requests.Session()
+                    response = session.get(encoded_site, timeout=10)
+                else:
+                    # Use a direct request for longer sleep times
+                    if session is not None:
+                        session.close()
+                        session = None
+                    response = requests.get(encoded_site, timeout=10)
+
+                result = process_response(response, site, sleep_time)
+                logging.debug(f"Processed response from {site}")
+                if result.action == "break":
+                    break
+                yield result
+
+            except requests.exceptions.Timeout:
+                logging.error(f"Timeout occurred while trying to access {site}")
+                yield ResponseResult("error", site, sleep_time, False)
+            except requests.exceptions.RequestException as e:
+                logging.error(f"Error scraping {site}: {e}")
+                yield ResponseResult("error", site, sleep_time, False)
+            finally:
+                if session is not None and sleep_time >= min_session_interval:
                     session.close()
                     session = None
-                response = requests.get(site, timeout=10)
+                    logging.debug("Session closed")
 
-            result = process_response(response, site, sleep_time)
-            if result.action == "break":
-                break
-            yield result
-
-        except requests.exceptions.Timeout:
-            logging.error(f"Timeout occurred while trying to access {site}")
-            yield ResponseResult("error", site, sleep_time, False)
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Error scraping {site}: {e}")
-            yield ResponseResult("error", site, sleep_time, False)
-        finally:
-            if session is not None and sleep_time >= min_session_interval:
-                session.close()
-                session = None
-
-        # Sleep for the designated time
-        time.sleep(sleep_time)
+    
+    except KeyboardInterrupt:
+        logging.info("Scraping interrupted by user.")
+        if session is not None:
+            session.close()
+            logging.info("Session closed after interruption.")
+        raise  # Re-raise the exception if needed
 
     # Ensure the session is closed if it was opened
     if session is not None:
         session.close()
+
+if __name__ == '__main__':
+    json_path = "grammar_points.json"
+    n_level = "N5"
+    sites_to_scrape_list = get_scrape_urls(json_path, n_level)
+    min_sleep = 2  # seconds
+    duration = calc_duration()
+    n_requests = len(sites_to_scrape_list)
+    sleep_times = [random.randint(min_sleep, 100) for _ in range(n_requests)]
+    minimum_session_interval = 30  # seconds
+
+    # Collect results from the generator
+    results = list(scrape_sites(sites_to_scrape_list, sleep_times, minimum_session_interval))
+
+    # Save the results list to a file
+    with open('scrape_results.json', 'w', encoding='utf-8') as f:
+        json.dump([result._asdict() for result in results], f, ensure_ascii=False, indent=4)
+
+
