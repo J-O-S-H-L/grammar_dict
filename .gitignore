@@ -2,3 +2,5 @@
 nord.ps1
 .venv
 poetry.lock
+*.log
+grammar_pages/
