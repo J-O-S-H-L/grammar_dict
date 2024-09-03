@@ -179,7 +179,6 @@ def process_response(response, site, sleep_time):
 
 
 def scrape_sites(sites, times, min_session_interval):
-    connect_to_nord = random.randint(0, 19)
     sites_times = zip(sites, times)
     session = None
 
@@ -189,16 +188,6 @@ def scrape_sites(sites, times, min_session_interval):
 
             # Encode the URL properly
             encoded_site = quote(site, safe=':/?=&')
-
-            # Randomly connect to NordVPN
-            dice_roll = random.randint(0, 19)
-            if connect_to_nord == dice_roll:
-                try:
-                    nord_connect()  # Ensure this function is defined and works
-                    logging.debug("Connected to NordVPN")
-                except Exception as e:
-                    logging.error(f"Error connecting to NordVPN: {e}")
-                    continue  # Skip to the next site if NordVPN connection fails
 
             try:
                 if sleep_time < min_session_interval:
