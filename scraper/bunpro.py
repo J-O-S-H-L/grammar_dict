@@ -102,6 +102,11 @@ def calc_duration(start=None, end=None):
 def save_source_code(soup, site):
     """Save the source code of a webpage to a file."""
     filename = site.split("/")[-1] + ".html"
+    dir = os.path.pardir(os.path.abspath(__file__))
+    if not os.path.exists(os.path.join(dir, "grammar_pages")):
+        logging.warning("Directory 'grammar_pages' does not exist. Creating it.")
+        os.makedirs(os.path.join(dir, "grammar_pages"))
+    filename = os.path.join(dir, "grammar_pages", filename)
     try:
         with open(filename, "w", encoding="utf-8") as file:
             file.write(soup.prettify())
