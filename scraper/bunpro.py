@@ -119,8 +119,13 @@ def calc_duration(start=None, end=None):
 def save_source_code(soup, site):
     """Save the source code of a webpage to a file."""
     filename = site.split("/")[-1] + ".html"
-    dir = os.path.pardir(os.path.abspath(__file__))
-    if not os.path.exists(os.path.join(dir, "grammar_pages")):
+    # Correctly get the directory of the current script and move to parent directory
+    dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current file
+    parent_dir = os.path.join(dir, os.pardir)  # Navigate to the parent directory
+    grammar_pages_dir = os.path.join(parent_dir, "grammar_pages")
+
+    # Check if 'grammar_pages' directory exists, if not, create it
+    if not os.path.exists(grammar_pages_dir):
         logging.warning("Directory 'grammar_pages' does not exist. Creating it.")
         os.makedirs(os.path.join(dir, "grammar_pages"))
     filename = os.path.join(dir, "grammar_pages", filename)
