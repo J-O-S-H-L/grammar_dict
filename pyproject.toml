@@ -1,10 +1,10 @@
 # pyproject.toml
 
 [tool.poetry]
-name = "web-scraper"
+name = "Bunpro-dictionary"
 version = "0.1.0"
-description = "A web scraper for extracting grammar points from a website."
-authors = ["Your Name <your.email@example.com>"]
+description = "Create a Bunpro dictionary by scraping the website"
+authors = ["n0luck13"]
 license = "MIT"
 
 # Define where your source code is located
