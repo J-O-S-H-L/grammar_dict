@@ -2,3 +2,4 @@
 nord.ps1
 .venv
 poetry.lock
+*.log
