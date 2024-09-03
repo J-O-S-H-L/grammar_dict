@@ -170,4 +170,15 @@ def scrape_sites(sites_times, min_session_interval):
     if session is not None:
         session.close()
 
-if 
+if __name__ == '__main__':
+    json_path = "grammar_points.json"
+    n_level = "N5"
+    scrape_sites = get_scrape_urls(json_path, n_level)
+    n_requests = len(scrape_sites)
+    min_sleep = 2 #seconds
+
+    # Generate random sleep intervals
+    end_time = dt.datetime.now().replace(hour=22, minute=59, second=59)
+    duration = calc_duration(end=end_time)
+
+    gen_random_sleeps(min_sleep, duration, n_requests)
