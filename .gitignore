@@ -1,1 +1,4 @@
 .flake8
+nord.ps1
+.venv
+poetry.lock
