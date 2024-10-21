@@ -4,6 +4,30 @@ import os
 import re
 import pandas as pd
 from const import fix_pos
+import logging
+
+
+# Create a logger
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+# Create a file handler for errors and warnings with UTF-8 encoding
+file_handler = logging.FileHandler("dataframe_errors.log", encoding="utf-8")
+file_handler.setLevel(logging.WARNING)
+
+# Create a console handler to output to the console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)  # Log info and above to console
+
+# Create a logging format and add it to the handlers
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+# Add the handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
 
 path_to_html_files = r"grammar_pages"
 page_list = os.listdir(path_to_html_files)
@@ -68,6 +92,9 @@ def main():
             "JLPT": JLPT_level(soup)
             
         }
+        if entry_contents["subject"] == "" or entry_contents["definition"] == "()":
+            logger.warning(f"Skipping {page} with grammar point {soup.find("title").get_text(strip=True).split(' ')[0]} as it has no subject or definition.")
+            continue
         df = pd.concat([df, pd.DataFrame(entry_contents, index=[0])], ignore_index=True)
 
     expanded_df = pd.concat(df.apply(split_and_duplicate_rows, axis=1).tolist(), ignore_index=True)
