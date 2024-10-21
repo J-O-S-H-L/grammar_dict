@@ -1,3 +1,0 @@
-# make line lenght 120
-[flake8]
-max-line-length = 120
