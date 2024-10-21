@@ -1,0 +1,54 @@
+[
+	[
+    "んだ・んです",
+    "んだ・んです",
+    "exp",
+    "exp",
+    35,
+    [
+        {
+            "type": "structured-content",
+            "content": [
+                "【 Meaning 】",
+                {
+                    "tag": "div",
+                    "style": {
+                        "marginLeft": 1
+                    },
+                    "content": "Explanatory, Emphasis, The fact is"
+                },
+                "【 Explination 】",
+                {
+                    "tag": "div",
+                    "style": {
+                        "marginLeft": 1
+                    },
+                    "content": "のです is a construction with several different forms, each meaning roughly the same thing. This expression behaves similarly to だ and です by themselves (asserting that something is true). However, the addition of の strengthens the relationship being highlighted. Due to this, it will come across a bit like 'it is a fact that (A)' in English. In these sentences, we can think of the ん , or の as simply adding emphasis to the statement. Due to の adding emphasis, this expression will be heard very frequently in explanations. Caution There is no real difference between ん and の . Only の is considered 'correct Japanese', but ん evolved to make things easier to say. ん is the most common form in spoken Japanese, and the use of の could be considered a bit formal, or 'stiff'. While both the だ and です forms are equally as natural, only the です form will be used if adding か to the end ～んです か . This construction shows that the speaker is looking for an explanation about something."
+                },
+                "【 Example sentences 】",
+                {
+                    "tag": "ol",
+                    "content": [
+                        {
+                            "tag": "li",
+                            "style": {
+                                "listStyleType": "'①'"
+                            },
+                            "content": "例文 1\nSentence 1"
+                        },
+                        {
+                            "tag": "li",
+                            "style": {
+                                "listStyleType": "'②'"
+                            },
+                            "content": "Sentence 2"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    1,
+    "N5"
+]
+]

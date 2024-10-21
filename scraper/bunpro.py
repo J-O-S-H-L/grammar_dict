@@ -223,7 +223,7 @@ def scrape_sites(sites, times, min_session_interval):
 
 if __name__ == '__main__':
     json_path = "grammar_points.json"
-    n_level = "N2"
+    n_level = "N1"
     sites_to_scrape_list = get_scrape_urls(json_path, n_level)
     min_sleep = 2  # seconds
     duration = calc_duration()
