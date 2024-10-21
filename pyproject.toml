@@ -18,6 +18,7 @@ requests = "^2.26.0"
 beautifulsoup4 = "^4.10.0"
 fake-useragent = "^1.0.1"
 pandas = "*"
+numpy = "*"
 toml = "^0.10.2"
 tqdm = "*"
 
