@@ -1,0 +1,1 @@
+Only use this scrapper to update old pages or add new pages. All existing html files are already provided in this repo
