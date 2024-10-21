@@ -38,12 +38,14 @@ def extract_explination(soup: BeautifulSoup) -> str:
     try:
         for example_section in main_div.find_all(class_=['writeup-example--japanese', 'writeup-example--english']):
             example_section.decompose()  # This removes the element from the tree
+        explination = main_div.get_text(separator=' ', strip=True)
+        return explination
     except AttributeError:
         logger.warning(f"Could not find example sections in {soup.find('title').get_text(strip=True)}")
+        return "Error: Could not extract explanation"
 
     # Extract the remaining text
-    explination = main_div.get_text(separator=' ', strip=True)
-    return explination
+
 
 def determine_pos(soup: BeautifulSoup) -> str:
     title = soup.select('ul h4')
@@ -56,7 +58,7 @@ def determine_pos(soup: BeautifulSoup) -> str:
                 return result
             else:
                 raise ValueError(f"Unknown POS: {result}")
-    return "Unknown"
+    return ""
 
 def remove_latin_chars(text):
     # Regular expression to match Latin characters (a-z, A-Z)
