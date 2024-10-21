@@ -1,16 +1,16 @@
 import json
-import requests
-from bs4 import BeautifulSoup
-import datetime as dt
+
 import time
 import random
+import datetime as dt
 import logging
 import os
-import os
 from collections import namedtuple
-import tqdm
-import subprocess
 from urllib.parse import quote
+import requests
+from bs4 import BeautifulSoup
+import tqdm
+
 
 
 ResponseResult = namedtuple(
@@ -54,12 +54,12 @@ def get_scrape_urls(json_path: str, n_level: str) -> list:
 
     base_url = "https://bunpro.jp"
     grammar_points = data.get(n_level, [])
-    
+
     scrape_sites = []
     for grammar_point in grammar_points:
         for url in grammar_point.values():
             scrape_sites.append(base_url + url)
-    
+
     return scrape_sites
 
 
@@ -112,7 +112,9 @@ def calc_duration(start=None, end=None):
 def save_source_code(soup, site):
     """Save the source code of a webpage to a file."""
     filename = site.split("/")[-1] + ".html"
-    dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current file
+    dir = os.path.dirname(
+        os.path.abspath(__file__)
+    )  # Get the directory of the current file
     parent_dir = os.path.join(dir, os.pardir)  # Navigate to the parent directory
     grammar_pages_dir = os.path.join(parent_dir, "grammar_pages")
 
@@ -129,15 +131,12 @@ def save_source_code(soup, site):
         # if it does, add a timestamp to the filename
         timestamp = dt.datetime.now().strftime("%Y%m%d%H%M%S")
         filename = f"{filename}_{timestamp}.html"
-        
+
     try:
         with open(filename, "w", encoding="utf-8") as file:
             file.write(soup.prettify())
     except IOError as e:
         logging.error(f"Error saving source code for {site}: {e}")
-
-
-
 
 
 def process_response(response, site, sleep_time):
@@ -146,7 +145,7 @@ def process_response(response, site, sleep_time):
         if response.status_code == 429:
             logging.error(f"Rate limit exceeded for {site}. Exiting.")
             return ResponseResult("break", site, sleep_time, False)
-        
+
         time.sleep(sleep_time)
         soup = BeautifulSoup(response.text, "html.parser")
         save_source_code(soup, site)
@@ -168,14 +167,20 @@ def scrape_sites(sites, times, min_session_interval):
     skip_sites = [site.split(".")[0] for site in skip_sites]
 
     try:
-        for site, sleep_time in tqdm.tqdm(sites_times, total=len(sites), desc="Scraping sites", bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt} sites', leave=True):
+        for site, sleep_time in tqdm.tqdm(
+            sites_times,
+            total=len(sites),
+            desc="Scraping sites",
+            bar_format="{l_bar}{bar} | {n_fmt}/{total_fmt} sites",
+            leave=True,
+        ):
 
-            if site.split('/')[-1] in skip_sites:
+            if site.split("/")[-1] in skip_sites:
                 logging.info(f"Skipping {site} as it has already been scraped.")
                 continue
 
             # Encode the URL properly
-            encoded_site = quote(site, safe=':/?=&')
+            encoded_site = quote(site, safe=":/?=&")
 
             try:
                 if sleep_time < min_session_interval:
@@ -208,7 +213,6 @@ def scrape_sites(sites, times, min_session_interval):
                     session = None
                     logging.debug("Session closed")
 
-    
     except KeyboardInterrupt:
         logging.info("Scraping interrupted by user.")
         if session is not None:
@@ -221,19 +225,23 @@ def scrape_sites(sites, times, min_session_interval):
         session.close()
 
 
-if __name__ == '__main__':
-    json_path = "grammar_points.json"
-    n_level = "N1"
-    sites_to_scrape_list = get_scrape_urls(json_path, n_level)
-    min_sleep = 2  # seconds
+if __name__ == "__main__":
+    JSON_PATH = "grammar_points.json"
+    N_LEVEL = "N1"
+    sites_to_scrape_list = get_scrape_urls(JSON_PATH, N_LEVEL)
+    MIN_SLEEP = 2  # seconds
     duration = calc_duration()
     n_requests = len(sites_to_scrape_list)
-    sleep_times = [random.randint(min_sleep, 10) for _ in range(n_requests)]
-    minimum_session_interval = 30  # seconds
+    sleep_times = [random.randint(MIN_SLEEP, 10) for _ in range(n_requests)]
+    MIN_SESSION_INTERVAL = 30  # seconds
 
     # Collect results from the generator
-    results = list(scrape_sites(sites_to_scrape_list, sleep_times, minimum_session_interval))
+    results = list(
+        scrape_sites(sites_to_scrape_list, sleep_times, MIN_SESSION_INTERVAL)
+    )
 
     # Save the results list to a file
-    with open('scrape_results.json', 'w', encoding='utf-8') as f:
-        json.dump([result._asdict() for result in results], f, ensure_ascii=False, indent=4)
+    with open("scrape_results.json", "w", encoding="utf-8") as f:
+        json.dump(
+            [result._asdict() for result in results], f, ensure_ascii=False, indent=4
+        )

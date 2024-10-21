@@ -9,7 +9,8 @@ license = "MIT"
 
 # Define where your source code is located
 packages = [
-    { include = "scraper" }
+    { include = "scraper" },
+    { include = "dictionary_construction" }  # Add your new package here
 ]
 
 [tool.poetry.dependencies]
