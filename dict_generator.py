@@ -74,6 +74,7 @@ def split_and_duplicate_rows(row):
     # Duplicate the row for each split
     return pd.DataFrame({
         'subject': splits,
+        'reading': [row['reading']] * len(splits),
         'part_of_speech': [row['part_of_speech']] * len(splits),
         'definition': [row['definition']] * len(splits),
         'explanation': [row['explanation']] * len(splits),
@@ -81,11 +82,19 @@ def split_and_duplicate_rows(row):
     })
 
 def main():
-    df = pd.DataFrame(columns=["subject", "part_of_speech", "definition", "explanation", "JLPT"])
+    df = pd.DataFrame(columns=[
+        "subject",
+        "reading",
+        "part_of_speech", 
+        "definition", 
+        "explanation", 
+        "JLPT"
+        ])
     for page in page_list:
         soup = BeautifulSoup(open(os.path.join(path_to_html_files, page), 'r', encoding='utf-8'), 'html.parser')
         entry_contents = {
             "subject": remove_latin_chars(soup.find('h1').get_text(strip=True).split(' ')[0]),
+            "reading": soup.find("title").get_text(strip=True).split(' ')[0],
             "part_of_speech": determine_pos(soup),
             "definition": soup.select_one('p.line-clamp-1').get_text(strip=True),
             "explanation": extract_explination(soup),
