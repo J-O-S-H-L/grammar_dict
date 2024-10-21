@@ -48,13 +48,13 @@ def compose_entry(
 
 
 def main():
-    df = pd.read_csv("bunpro_entries.csv")
+    df = pd.read_csv(r"dictionary_construction\bunpro_entries.csv")
     result = df.apply(
         lambda row: compose_entry(**row), axis=1
     ).tolist()  # Convert to a list
     # break the list up into 4 files
     for i in range(4):
-        with open(f"test_dict/term_bank_{i+1}.json", "w", encoding="utf-8") as f:
+        with open(fr"dictionary_files\term_bank_{i+1}.json", "w", encoding="utf-8") as f:
             json.dump(result[i::4], f, indent=4, ensure_ascii=False)
 
 
