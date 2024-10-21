@@ -29,7 +29,6 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-importlib.resources.path()
 path_to_html_files = r"grammar_pages"
 page_list = os.listdir(path_to_html_files)
 
@@ -41,7 +40,7 @@ def extract_explination(soup: BeautifulSoup) -> str:
         for example_section in main_div.find_all(
             class_=["writeup-example--japanese", "writeup-example--english"]
         ):
-            example_section.decompose()  # This removes the element from the tree
+            example_section.decompose()
         explination = main_div.get_text(separator=" ", strip=True)
         return explination
     except AttributeError:
