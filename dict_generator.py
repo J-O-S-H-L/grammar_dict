@@ -35,9 +35,11 @@ page_list = os.listdir(path_to_html_files)
 def extract_explination(soup: BeautifulSoup) -> str:
     main_div = soup.find('div', class_='bp-ddw bp-writeup-body prose')
 
-    # Remove example sentence sections by specifying the classes you want to skip
-    for example_section in main_div.find_all(class_=['writeup-example--japanese', 'writeup-example--english']):
-        example_section.decompose()  # This removes the element from the tree
+    try:
+        for example_section in main_div.find_all(class_=['writeup-example--japanese', 'writeup-example--english']):
+            example_section.decompose()  # This removes the element from the tree
+    except AttributeError:
+        logger.warning(f"Could not find example sections in {soup.find('title').get_text(strip=True)}")
 
     # Extract the remaining text
     explination = main_div.get_text(separator=' ', strip=True)

@@ -5,3 +5,4 @@ poetry.lock
 *.log
 scraper/scrape_results.json
 dictonary/develop_dict.ipynb
+__pycache__/const.cpython-312.pyc
