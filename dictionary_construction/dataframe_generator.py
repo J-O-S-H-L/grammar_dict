@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import os
 import re
 import pandas as pd
-from const import fix_pos
+from dictonary_construction.const import fix_pos
 import logging
 
 

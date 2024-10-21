@@ -6,3 +6,6 @@ poetry.lock
 scraper/scrape_results.json
 dictonary/develop_dict.ipynb
 __pycache__/const.cpython-312.pyc
+.vscode/
+bunpro_entries.csv
+quick_zip.py
