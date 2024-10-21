@@ -91,6 +91,7 @@ def split_and_duplicate_rows(row):
             "part_of_speech": [row["part_of_speech"]] * len(splits),
             "definition": [row["definition"]] * len(splits),
             "explanation": [row["explanation"]] * len(splits),
+            "link": [row["link"]] * len(splits),
             "JLPT": [row["JLPT"]] * len(splits),
         }
     )
@@ -104,6 +105,7 @@ def main():
             "part_of_speech",
             "definition",
             "explanation",
+            "link"
             "JLPT",
         ]
     )
@@ -119,6 +121,7 @@ def main():
             "part_of_speech": determine_pos(soup),
             "definition": soup.select_one("p.line-clamp-1").get_text(strip=True),
             "explanation": extract_explination(soup),
+            "link": soup.select_one('head > link[rel="canonical"]')['href'],
             "JLPT": JLPT_level(soup),
         }
         if entry_contents["subject"] == "" or entry_contents["definition"] == "()":

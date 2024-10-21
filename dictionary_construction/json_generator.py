@@ -4,7 +4,7 @@ import numpy as np
 
 
 def compose_entry(
-    subject, reading, part_of_speech, definition, explanation, matchup=10, JLPT="N5"
+    subject, reading, part_of_speech, definition, explanation, link, matchup=10, JLPT="N5"
 ) -> str:
     if part_of_speech is np.nan:
         part_of_speech = ""
@@ -39,6 +39,16 @@ def compose_entry(
                         ],
                     },
                 ],
+            },
+            {
+                "type": "structured-content",
+                "content": [
+                    {
+                        "tag": "a",
+                        "href": link,
+                        "content": "Link to Bunpro",
+                    }
+                ]
             }
         ],
         1,  # Some boolean flag
