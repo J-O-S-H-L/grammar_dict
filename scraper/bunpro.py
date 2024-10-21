@@ -40,23 +40,6 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 
-# # NordVPN connection
-# def nord_connect():
-#     nordvpn_path = r"C:\Program Files\NordVPN\NordVPN.exe"
-#     command = f'& "{nordvpn_path}" -c'
-
-#     try:
-#         result = subprocess.run(
-#             ["powershell", "-Command", command],
-#             capture_output=True,
-#             text=True,
-#             check=True  # Raises CalledProcessError if command fails
-#         )
-#         print(result.stdout)
-#     except subprocess.CalledProcessError as e:
-#         print(f"An error occurred: {e.stderr}")
-
-
 def get_scrape_urls(json_path: str, n_level: str) -> list:
     """Generate a list of URLs to scrape based on grammar points."""
     try:
@@ -240,12 +223,12 @@ def scrape_sites(sites, times, min_session_interval):
 
 if __name__ == '__main__':
     json_path = "grammar_points.json"
-    n_level = "N4"
+    n_level = "N2"
     sites_to_scrape_list = get_scrape_urls(json_path, n_level)
     min_sleep = 2  # seconds
     duration = calc_duration()
     n_requests = len(sites_to_scrape_list)
-    sleep_times = [random.randint(min_sleep, 100) for _ in range(n_requests)]
+    sleep_times = [random.randint(min_sleep, 10) for _ in range(n_requests)]
     minimum_session_interval = 30  # seconds
 
     # Collect results from the generator
