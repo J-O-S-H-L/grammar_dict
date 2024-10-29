@@ -1,6 +1,3 @@
-import json
-import pandas as pd
-import numpy as np
 import re
 from bs4 import BeautifulSoup
 from dictionary_construction.const import FIX_POS
@@ -53,7 +50,7 @@ class Dictionary_Entry:
             return "Error: Could not extract explanation"
         
     def extract_jp_example(self) -> list:
-        examples = self.soup.select
+        pass
 
     def extract_jlpt_level(self) -> str:
         title = self.soup.find("title").get_text(strip=True)
