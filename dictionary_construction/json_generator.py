@@ -4,14 +4,14 @@ import numpy as np
 
 
 def compose_entry(
-    subject, reading, part_of_speech, definition, explanation, link, matchup=10, JLPT="N5"
+    subject, reading, term_long_name, part_of_speech, definition, explanation, link, matchup=10, JLPT="N5"
 ) -> str:
     if part_of_speech is np.nan:
         part_of_speech = ""
     data = [
         subject,  # Kanji
         reading,  # Kana
-        part_of_speech,  # Part of speech 1
+        term_long_name,  # Part of speech 1
         part_of_speech,  # Part of speech 2
         matchup,
         [
