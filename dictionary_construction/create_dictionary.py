@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import zipfile
 from dictionary_construction.Entry import Dictionary_Entry
 
-def generate_entry(entry: Dictionary_Entry, example_sentences = []) -> list:
+def generate_entry(entry: Dictionary_Entry) -> list:
     """
     Generates a dictionary structure for the desired JSON schema with dynamic example sentences.
     """
@@ -15,7 +15,7 @@ def generate_entry(entry: Dictionary_Entry, example_sentences = []) -> list:
             "style": {"listStyleType": f"'{chr(9311 + idx)}'"},
             "content": sentence
         }
-        for idx, sentence in enumerate(example_sentences, start=1)
+        for idx, sentence in enumerate(entry.example_sentences, start=1)
     ]
     
     # JSON structure based on provided schema
@@ -86,7 +86,5 @@ def main():
             json.dump(grammar_points[i::4], f, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
-    # main()
-
-    # Zip the dictionary files
+    main()
     zip_directory("dictionary_files", "bunpro_dict.zip")

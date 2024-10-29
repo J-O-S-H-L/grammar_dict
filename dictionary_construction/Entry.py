@@ -11,7 +11,7 @@ class Dictionary_Entry:
         self.part_of_speech = self.extract_pos()
         self.definition = self.soup.select_one("p.line-clamp-1").get_text(strip=True)
         self.explanation = self.extract_explanation()
-        self.jp_example_sentance = self.extract_jp_example()
+        self.example_sentences = self.extract_jp_example()
         self.link = self.soup.select_one('head > link[rel="canonical"]')['href']
         self.matchup = 10
         self.JLPT = self.extract_jlpt_level()
@@ -50,7 +50,20 @@ class Dictionary_Entry:
             return "Error: Could not extract explanation"
         
     def extract_jp_example(self) -> list:
-        pass
+        example_sentences = self.soup.find_all(id=re.compile(r'^study-question-\d+$'))
+        result = []
+        for sentance in example_sentences:
+            jp_text = sentance.get_text(strip=True)
+            try:
+                jp_text = re.match(r'^[^A-Za-z]+', jp_text).group()
+            except AttributeError:
+                pass
+
+            en_text = sentance.select_one('p.bp-sdw.undefined').get_text(strip=False).replace('\n', ' ')
+            en_text = re.sub(r'\s+', ' ', en_text)
+            result.append((jp_text+'\n'+en_text))
+        return result
+
 
     def extract_jlpt_level(self) -> str:
         title = self.soup.find("title").get_text(strip=True)
